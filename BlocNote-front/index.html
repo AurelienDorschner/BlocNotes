@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Bloc Note</title>
+</head>
+
+<body>
+    <main>
+        <h1>Bloc Note</h1>
+        <h2 id="utilisateur">Chargement... </h2>
+        <div class=" template-liste invisible">
+            <div class="template-tache invisible">
+                <div class="flex">
+                    <input type="checkbox" class="status_tache">
+                    <label for="status_tache" class="contenu"></label>
+                    <div class="delete">X</div>
+                </div>
+            </div>
+        </div>
+        <section id="listes">
+        </section>
+    </main>
+
+    <script>
+        refresh();
+
+        function onDelete(id_tache) {
+
+            fetch("http://localhost:8080/supprimer_tache/" + id_tache)
+                .then(() => { refresh(); })
+        }
+
+        function refresh() {
+
+            const AllListes = document.querySelector('#listes');
+            AllListes.innerHTML = '';
+
+            fetch("http://localhost:8080/utilisateur/1")
+                .then(resultat => resultat.json())
+                .then(utilisateur => {
+
+                    const user = document.querySelector("#utilisateur");
+                    const templateTache = document.querySelector('.template-tache');
+                    user.innerHTML = utilisateur.pseudo;
+                    utilisateur.listeListes.forEach(maListe => {
+
+                        const templateListe = document.querySelector('.template-liste');
+                        const liste = templateListe.cloneNode(true);
+                        liste.classList.remove('invisible');
+                        AllListes.appendChild(liste);
+
+                        maListe.listeTaches.forEach(maTache => {
+                            const tache = templateTache.cloneNode(true);
+                            tache.classList.remove('invisible');
+                            const statut = tache.querySelector('.status_tache');
+                            const contenu = tache.querySelector('.contenu');
+
+                            if (maTache.statut) {
+                                statut.setAttribute('checked', true);
+                            }
+                            contenu.textContent = maTache.matache;
+                            liste.appendChild(tache);
+                            const btn_delete = tache.querySelector('.delete');
+                            btn_delete.addEventListener('click', () => onDelete(maTache.id))
+
+                        })
+                    })
+                })
+        }
+
+    </script>
+</body>
+</html>
